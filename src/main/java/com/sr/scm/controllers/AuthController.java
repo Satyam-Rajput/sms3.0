@@ -3,6 +3,7 @@ package com.sr.scm.controllers;
 import com.sr.scm.dtos.UserDTO;
 import com.sr.scm.entities.Users;
 import com.sr.scm.repos.UserRepository;
+import com.sr.scm.services.impl.jwt.JWTService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,13 +30,17 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private JWTService jwtService;
+
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword()));
 
         if (authentication.isAuthenticated()) {
-            return new ResponseEntity<>("Success", HttpStatus.OK);
+            String key = jwtService.generateToken(userDTO);
+            return new ResponseEntity<>(key, HttpStatus.OK);
         }
         return new ResponseEntity<>("Failed", HttpStatus.UNAUTHORIZED);
     }
